@@ -5,14 +5,14 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: nginx
+      app: homepage
   replicas: 1
   strategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
-        app: nginx
+        app: homepage
     spec:
       containers:
       - name: nginx
