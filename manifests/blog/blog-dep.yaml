@@ -15,8 +15,8 @@ spec:
         app: blog
     spec:
       containers:
-      - name: nginx
-        image: nginx:latest
+      - name: blog
+        image: docker.io/mtinside/mt165-blog:20180224
         ports:
         - name: http
           protocol: TCP
