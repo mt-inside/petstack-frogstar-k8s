@@ -8,6 +8,6 @@ spec:
     app: nginx
   ports:
   - name: http
-    protocol: tcp
+    protocol: TCP
     port: 80
     targetPort: http
