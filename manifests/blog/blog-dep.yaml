@@ -1,18 +1,18 @@
-apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
+  name: blog
 spec:
   selector:
     matchLabels:
-      app: nginx
+      app: blog
   replicas: 2
   strategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
-        app: nginx
+        app: blog
     spec:
       containers:
       - name: nginx

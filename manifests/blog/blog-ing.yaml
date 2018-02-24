@@ -1,0 +1,12 @@
+version: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: blog
+spec:
+  rules:
+  - host: blog.mt165.co.uk
+    http:
+      paths:
+      - backend:
+          serviceName: blog
+          servicePort: 80
