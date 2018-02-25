@@ -4,6 +4,7 @@ metadata:
   name: blog
   annotations:
     kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/tls-acme: "true"
 spec:
   rules:
   - host: blog.mt165.co.uk
@@ -12,3 +13,7 @@ spec:
       - backend:
           serviceName: blog
           servicePort: http
+  tls:
+    - hosts:
+      - blog.mt165.co.uk
+      secretName: blog-tls
