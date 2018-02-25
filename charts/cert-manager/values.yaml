@@ -24,9 +24,7 @@ extraArgs: []
 ingressShim:
   enabled: true
   # Optional additional arguments for ingress-shim
-  extraArgs:
-    - --default-issuer-name=letsencrypt-prod
-    - --default-issuer-kind=ClusterIssuer
+  extraArgs: []
   resources:
     requests:
       cpu: 10m
