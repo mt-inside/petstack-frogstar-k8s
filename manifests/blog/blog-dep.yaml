@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: blog
-        image: docker.io/mtinside/mt165-blog:20180224
+        image: docker.io/mtinside/mt165-blog:20180225
         imagePullPolicy: Always
         ports:
         - name: http
