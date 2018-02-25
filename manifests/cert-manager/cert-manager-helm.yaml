@@ -1,0 +1,17 @@
+---
+apiVersion: helm.integrations.flux.weave.works/v1alpha
+kind: FluxHelmRelease
+metadata:
+  name: cert-manager
+  namespace:  default
+  labels:
+    chart: cert-manager
+spec:
+  # For now, the helm operator can only pull charts from one git repo. We
+  # use /charts in this repo, and the following is this Chart's relative
+  # path
+  chartGitPath: cert-manager
+  releaseName: cert-manager
+  #values:
+  #  - name: image
+  #    value: bitnami/mongodb:3.7.1-r1
