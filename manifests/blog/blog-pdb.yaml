@@ -6,4 +6,4 @@ spec:
   selector:
     matchLabels:
       app: blog
-  minAvailable: 1
+  maxUnavailable: 10%
