@@ -12,6 +12,6 @@ spec:
   # path
   chartGitPath: cert-manager
   releaseName: cert-manager
-  values:
-    - name: ingressShim.extraArgs
-      value: '{--default-issuer-kind=ClusterIssuer,--default-issuer-name=letsencrypt-prod}'
+  #values:
+  #  - name: image
+  #    value: bitnami/mongodb:3.7.1-r1

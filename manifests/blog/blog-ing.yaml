@@ -4,7 +4,7 @@ metadata:
   name: blog
   annotations:
     kubernetes.io/ingress.class: "nginx"
-    kubernetes.io/tls-acme: "true"
+    certmanager.k8s.io/cluster-issuer: "letsencrypt-prod"
 spec:
   rules:
   - host: blog.mt165.co.uk
