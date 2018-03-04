@@ -19,8 +19,8 @@ spec:
       - backend:
           serviceName: homepage
           servicePort: http
-tls:
-  - hosts:
-    - mt165.co.uk
-    - www.mt165.co.uk
-    secretName: homepage-tls
+  tls:
+    - hosts:
+      - mt165.co.uk
+      - www.mt165.co.uk
+      secretName: homepage-tls
