@@ -1,19 +1,19 @@
 resource "google_project" "project" {
-    name = "${var.cluster_name}"
-    project_id = "${var.cluster_name}"
+    name = "${var.deployment_name}"
+    project_id = "${var.deployment_name}"
     billing_account = "${var.gcloud_billing_account}" /* account to which to charge. Won't do much without one. */
 }
 
 resource "google_project_service" "compute_api" {
     depends_on = [ "google_project.project" ]
 
-    project = "${var.cluster_name}"
+    project = "${var.deployment_name}"
     service = "compute.googleapis.com"
 }
 resource "google_project_service" "cluster_api" {
     depends_on = [ "google_project.project" ]
 
-    project = "${var.cluster_name}"
+    project = "${var.deployment_name}"
     service = "container.googleapis.com"
 }
 
@@ -22,8 +22,10 @@ resource "google_container_cluster" "cluster" {
     depends_on = [ "google_project_service.compute_api", "google_project_service.cluster_api" ]
 
     project = "${google_project.project.number}"
-    name = "${var.cluster_name}"
+    name = "${var.deployment_name}"
     zone = "${var.gcloud_zone}"
+
+    min_master_version = "1.9.3-gke.0"
 
     /* Node pool handling is bad. Options
     * - Give initial_node_count. This makes a default pool. Can specify
@@ -98,6 +100,26 @@ resource "google_container_cluster" "cluster" {
     }*/
 
     provisioner "local-exec" {
-        command = "gcloud --project ${var.cluster_name} container clusters get-credentials ${var.cluster_name}"
+        command = "gcloud --project ${var.deployment_name} container clusters get-credentials ${var.deployment_name}"
+    }
+    provisioner "local-exec" {
+        command = "kubectl config delete-cluster gke_${var.deployment_name}_${var.gcloud_zone}_${var.deployment_name}"
+        command = "kubectl config delete-context gke_${var.deployment_name}_${var.gcloud_zone}_${var.deployment_name}"
+        when = "destroy"
+    }
+}
+
+resource "null_resource" "get_root" {
+    triggers {
+        cluster_up = "${google_container_cluster.cluster.endpoint}"
+    }
+
+    // TODO: replace with better creds management, see README
+    provisioner "local-exec" {
+        command = "kubectl create clusterrolebinding mt-admin --user ${var.cluster_admin_user} --clusterrole cluster-admin"
+    }
+    provisioner "local-exec" {
+        command = "kubectl delete clusterrolebinding mt-admin"
+        when = "destroy"
     }
 }
