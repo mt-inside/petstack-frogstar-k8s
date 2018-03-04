@@ -44,7 +44,10 @@ resource "google_container_cluster" "cluster" {
         {
             name = "ondemand"
 
-            node_count = 1
+            # node_count = 1 Don't declare in git as we're auto-scaling.
+            # Initial value may be >1 but it should autoscale down.
+
+            /* Implies enabling the cluster autoscaler */
             autoscaling {
                 min_node_count = 1
                 max_node_count = 5
