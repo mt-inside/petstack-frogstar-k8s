@@ -1,12 +1,13 @@
 ```bash
-$ terraform init modules/cluster/gcloud
-$ terraform init deployment/frogstar-b
-$ terraform plan -out plan.tfplan deployment/frogstar-b
+$ ?? terraform init modules/cluster/gcloud
+$ cd deployment/frogstar-b/infra
+$ terraform init
+$ terraform plan -out plan.tfplan
 $ terraform apply plan.tfplan
 ```
 
 ```bash
-$ terraform plan -destory -out plan.tfplan deployment/frogstar-b
+$ terraform plan -destory -out plan.tfplan
 $ terraform apply plan.tfplan
 ```
 
