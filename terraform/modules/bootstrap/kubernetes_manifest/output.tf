@@ -1,3 +1,3 @@
 output "done" {
-    value = "true"
+  value = "true"
 }

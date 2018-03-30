@@ -1,15 +1,15 @@
 variable "deployment_name" {
-    type = "string"
+  type = "string"
 }
 
 variable "gcloud_zone" {
-    type = "string"
+  type = "string"
 }
 
 variable "gcloud_billing_account" {
-    type = "string"
+  type = "string"
 }
 
 variable "cluster_admin_user" {
-    type = "string"
+  type = "string"
 }

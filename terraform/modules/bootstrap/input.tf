@@ -1,3 +1,3 @@
 variable "deployment_name" {
-    type = "string"
+  type = "string"
 }

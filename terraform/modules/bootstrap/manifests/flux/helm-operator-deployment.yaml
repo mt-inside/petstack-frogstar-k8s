@@ -38,7 +38,7 @@
           # release or image version at https://quay.io/weaveworks/flux (both have the same latest tag)
           # and replace the tag here.
           image: quay.io/weaveworks/helm-operator:alpha
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           volumeMounts:
           - name: git-key
             mountPath: /etc/fluxd/ssh

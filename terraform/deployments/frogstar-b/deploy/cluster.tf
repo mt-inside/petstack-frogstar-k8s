@@ -1,5 +1,5 @@
 module "bootstrap" {
-    source = "../../../modules/bootstrap"
+  source = "../../../modules/bootstrap"
 
-    deployment_name = "${var.deployment_name}"
+  deployment_name = "${var.deployment_name}"
 }

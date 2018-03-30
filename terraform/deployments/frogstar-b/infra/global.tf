@@ -1,3 +1,3 @@
 variable "deployment_name" {
-    default = "frogstar-w"
+  default = "frogstar-b"
 }

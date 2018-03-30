@@ -1,128 +1,138 @@
 resource "google_project" "project" {
-    name = "${var.deployment_name}"
-    project_id = "${var.deployment_name}"
-    billing_account = "${var.gcloud_billing_account}" /* account to which to charge. Won't do much without one. */
+  name            = "${var.deployment_name}"
+  project_id      = "${var.deployment_name}"
+  billing_account = "${var.gcloud_billing_account}" # account to which to charge. Won't do much without one.
 }
 
 resource "google_project_service" "compute_api" {
-    depends_on = [ "google_project.project" ]
+  depends_on = ["google_project.project"]
 
-    project = "${var.deployment_name}"
-    service = "compute.googleapis.com"
+  project = "${var.deployment_name}"
+  service = "compute.googleapis.com"
 }
+
 resource "google_project_service" "cluster_api" {
-    depends_on = [ "google_project.project" ]
+  depends_on = ["google_project.project"]
 
-    project = "${var.deployment_name}"
-    service = "container.googleapis.com"
+  project = "${var.deployment_name}"
+  service = "container.googleapis.com"
 }
 
-/* Just makes the control plane(?). See node pools comments */
+# Just makes the control plane(?). See node pools comments
 resource "google_container_cluster" "cluster" {
-    depends_on = [ "google_project_service.compute_api", "google_project_service.cluster_api" ]
+  depends_on = ["google_project_service.compute_api", "google_project_service.cluster_api"]
 
-    project = "${google_project.project.number}"
-    name = "${var.deployment_name}"
-    zone = "${var.gcloud_zone}"
+  project = "${google_project.project.number}"
+  name    = "${var.deployment_name}"
+  zone    = "${var.gcloud_zone}"
 
-    min_master_version = "1.9.3-gke.0"
+  min_master_version = "1.9.6-gke.0"
 
-    /* Node pool handling is bad. Options
-    * - Give initial_node_count. This makes a default pool. Can specify
-    * /some/ other options for it in the cluster resource (e.g. node_config),
-    * but not everything e.g. autoscaling.
-    * - Specify separate "google_container_node_pool" resources. These have
-    * a cluster name and ADD pools to it. They have the same schema as the
-    * in-line node_pool below, but also need project and zone. Nothing you can
-    * do to prevent the default pool being made in this case. People describle
-    * having a null_resource to delete the default pool: https://www.bountysource.com/issues/51832667-not-possible-to-use-google_container_node_pool-without-the-default-node-pool
-    * - Have an array of node_pools in-line, as below. Slightly clunky, but
-    * prevents the creation of the default node pool. Mutex with
-    * initial_node_count
-    */
-    node_pool = [
-        {
-            name = "ondemand"
+  # Node pool handling is bad. Options
+  # - Give initial_node_count. This makes a default pool. Can specify
+  # /some/ other options for it in the cluster resource (e.g. node_config),
+  # but not everything e.g. autoscaling.
+  # - Specify separate "google_container_node_pool" resources. These have
+  # a cluster name and ADD pools to it. They have the same schema as the
+  # in-line node_pool below, but also need project and zone. Nothing you can
+  # do to prevent the default pool being made in this case. People describle
+  # having a null_resource to delete the default pool: https://www.bountysource.com/issues/51832667-not-possible-to-use-google_container_node_pool-without-the-default-node-pool
+  # - Have an array of node_pools in-line, as below. Slightly clunky, but
+  # prevents the creation of the default node pool. Mutexed with
+  # initial_node_count
+  node_pool = [
+    {
+      name = "ondemand"
 
-            # node_count = 1 Don't declare in git as we're auto-scaling.
-            # Initial value may be >1 but it should autoscale down.
+      # Really don't want to explicity state this as we're autoscaling,
+      # but it turns out if you don't, you start with 0 nodes and it
+      # doesn't autoscale up. TODO: should really autocommit the current
+      # value back every now and again, latching style.
+      node_count = 1
 
-            /* Implies enabling the cluster autoscaler */
-            autoscaling {
-                min_node_count = 1
-                max_node_count = 5
-            }
+      # Implies enabling the cluster autoscaler
+      autoscaling {
+        min_node_count = 1
+        max_node_count = 5
+      }
 
-            node_config {
-                disk_size_gb = 100
-                machine_type = "n1-standard-1"
-                preemptible = false
-                oauth_scopes = [
-                    /* GCE API access from the Nodes' default (GCE?) service
-                    * accounts. This is the standard gcloud console set */
+      node_config {
+        disk_size_gb = 100
+        machine_type = "n1-standard-1"
+        preemptible  = false
 
-                    /* Necessary */
-                    "https://www.googleapis.com/auth/compute",
-                    "https://www.googleapis.com/auth/devstorage.read_only",
-                    "https://www.googleapis.com/auth/logging.write",
-                    "https://www.googleapis.com/auth/monitoring",
-                    /* Optional */
-                    "https://www.googleapis.com/auth/service.management.readonly",
-                    "https://www.googleapis.com/auth/servicecontrol",
-                    "https://www.googleapis.com/auth/trace.append",
-                ]
-            }
-        }
-    ]
+        oauth_scopes = [
+          # Necessary
+          "https://www.googleapis.com/auth/compute",
 
-    //cluster_ipv4_cidr = "10.244.0.0/16" Doesn't seem to work, maybe not the pod network option I thought
+          "https://www.googleapis.com/auth/devstorage.read_only",
+          "https://www.googleapis.com/auth/logging.write",
+          "https://www.googleapis.com/auth/monitoring",
 
-    addons_config {
-        horizontal_pod_autoscaling {
-            /* Can't really disable this as it's a controller-manager
-            * option, not something that can be installed after the fact */
-            disabled = false
-        }
-        http_load_balancing {
-            /* shitty GCE ingress controller */
-            disabled = true
-        }
-        kubernetes_dashboard {
-            /* TODO disable? as can be installed manually for consistency */
-            disabled = false
-        }
+          # Optional
+          "https://www.googleapis.com/auth/service.management.readonly",
+
+          "https://www.googleapis.com/auth/servicecontrol",
+          "https://www.googleapis.com/auth/trace.append",
+        ]
+
+        # GCE API access from the Nodes' default (GCE?) service
+        # accounts. This is the standard gcloud console set
+      }
+    },
+  ]
+
+  # cluster_ipv4_cidr = "10.244.0.0/16" Doesn't seem to work, maybe not the pod network option I thought
+
+  addons_config {
+    horizontal_pod_autoscaling {
+      # Can't really disable this as it's a controller-manager
+      # option, not something that can be installed after the fact
+      disabled = false
     }
 
-    /* GUI-made clusters get this too. HTTP basic auth for talking to the
-    * API server. Ideally want to turn basic auth off altogehter but can't
-    * see an option; think this passwd will just get autogenerated if not
-    * specified */
-    /*master_auth {
-        username = "admin"
-        password = "fTjqHAMvGh4XSyhX"
-    }*/
+    http_load_balancing {
+      # shitty GCE ingress controller
+      disabled = true
+    }
 
-    provisioner "local-exec" {
-        command = "gcloud --project ${var.deployment_name} container clusters get-credentials ${var.deployment_name}"
+    kubernetes_dashboard {
+      # TODO disable? as can be installed manually for consistency
+      disabled = false
     }
-    provisioner "local-exec" {
-        command = "kubectl config delete-cluster gke_${var.deployment_name}_${var.gcloud_zone}_${var.deployment_name}"
-        command = "kubectl config delete-context gke_${var.deployment_name}_${var.gcloud_zone}_${var.deployment_name}"
-        when = "destroy"
-    }
+  }
+
+  # GUI-made clusters get this too. HTTP basic auth for talking to the
+  # API server. Ideally want to turn basic auth off altogehter but can't
+  # see an option; think this passwd will just get autogenerated if not
+  # specified
+  # master_auth {
+  #   username = "admin"
+  #   password = "fTjqHAMvGh4XSyhX"
+  # }
+
+  provisioner "local-exec" {
+    command = "gcloud --project ${var.deployment_name} container clusters get-credentials ${var.deployment_name}"
+  }
+  provisioner "local-exec" {
+    command = "kubectl config delete-cluster gke_${var.deployment_name}_${var.gcloud_zone}_${var.deployment_name}"
+    command = "kubectl config delete-context gke_${var.deployment_name}_${var.gcloud_zone}_${var.deployment_name}"
+    when    = "destroy"
+  }
 }
 
 resource "null_resource" "get_root" {
-    triggers {
-        cluster_up = "${google_container_cluster.cluster.endpoint}"
-    }
+  triggers {
+    cluster_up = "${google_container_cluster.cluster.endpoint}"
+  }
 
-    // TODO: replace with better creds management, see README
-    provisioner "local-exec" {
-        command = "kubectl create clusterrolebinding mt-admin --user ${var.cluster_admin_user} --clusterrole cluster-admin"
-    }
-    provisioner "local-exec" {
-        command = "kubectl delete clusterrolebinding mt-admin"
-        when = "destroy"
-    }
+  # TODO: replace with better creds management, see README
+  provisioner "local-exec" {
+    command = "kubectl create clusterrolebinding mt-admin --user ${var.cluster_admin_user} --clusterrole cluster-admin"
+  }
+
+  provisioner "local-exec" {
+    command = "kubectl delete clusterrolebinding mt-admin"
+    when    = "destroy"
+  }
 }
