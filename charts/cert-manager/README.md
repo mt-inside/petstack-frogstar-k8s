@@ -1,5 +1,3 @@
-WARNING: vendored from https://github.com/jetstack/cert-manager/tree/master/contrib/charts/cert-manager:v0.2.3
-
 # cert-manager
 
 cert-manager is a Kubernetes addon to automate the management and issuance of
