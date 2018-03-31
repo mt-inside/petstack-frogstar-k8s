@@ -1,20 +1,34 @@
+resource random_string "project_id_suffix" {
+  length  = 8
+  lower   = true
+  upper   = false
+  number  = true
+  special = false
+}
+
+locals {
+  project_id   = "${var.deployment_name}-${random_string.project_id_suffix.result}" # Can't be re-used, ever
+  project_name = "${var.deployment_name}"
+  cluster_name = "${var.deployment_name}"
+}
+
 resource "google_project" "project" {
-  name            = "${var.deployment_name}"
-  project_id      = "${var.deployment_name}"
+  name            = "${local.project_name}"
+  project_id      = "${local.project_id}"
   billing_account = "${var.gcloud_billing_account}" # account to which to charge. Won't do much without one.
 }
 
 resource "google_project_service" "compute_api" {
   depends_on = ["google_project.project"]
 
-  project = "${var.deployment_name}"
+  project = "${local.project_id}"
   service = "compute.googleapis.com"
 }
 
 resource "google_project_service" "cluster_api" {
   depends_on = ["google_project.project"]
 
-  project = "${var.deployment_name}"
+  project = "${local.project_id}"
   service = "container.googleapis.com"
 }
 
@@ -22,8 +36,8 @@ resource "google_project_service" "cluster_api" {
 resource "google_container_cluster" "cluster" {
   depends_on = ["google_project_service.compute_api", "google_project_service.cluster_api"]
 
-  project = "${google_project.project.number}"
-  name    = "${var.deployment_name}"
+  project = "${local.project_id}"
+  name    = "${local.cluster_name}"
   zone    = "${var.gcloud_zone}"
 
   min_master_version = "1.9.6-gke.0"
@@ -112,11 +126,11 @@ resource "google_container_cluster" "cluster" {
   # }
 
   provisioner "local-exec" {
-    command = "gcloud --project ${var.deployment_name} container clusters get-credentials ${var.deployment_name}"
+    command = "gcloud --project ${local.project_id} container clusters get-credentials ${local.cluster_name}"
   }
   provisioner "local-exec" {
-    command = "kubectl config delete-cluster gke_${var.deployment_name}_${var.gcloud_zone}_${var.deployment_name}"
-    command = "kubectl config delete-context gke_${var.deployment_name}_${var.gcloud_zone}_${var.deployment_name}"
+    command = "kubectl config delete-cluster gke_${local.project_id}_${var.gcloud_zone}_${local.cluster_name}"
+    command = "kubectl config delete-context gke_${local.project_id}_${var.gcloud_zone}_${local.cluster_name}"
     when    = "destroy"
   }
 }

@@ -1,3 +1,7 @@
+output "project_id" {
+  value = "${google_project.project.project_id}"
+}
+
 output "cluster_version" {
   value = "${google_container_cluster.cluster.master_version}"
 }
