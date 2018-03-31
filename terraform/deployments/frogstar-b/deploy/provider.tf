@@ -1,11 +1,11 @@
-# Kubernetes
+# == Kubernetes ==
 # Kubernetes is used in two ways
 # - The official provider
 # - null_resources that call kubectl
 # Currently, both just use the current context in the user's kubeconfig
 # file. This could be better, qv README
 
-# github
+# == Github ==
 variable "github_org" {
   default = "mt-inside"
 }
