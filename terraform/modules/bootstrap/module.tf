@@ -66,9 +66,15 @@ module "flux-helm-dep" {
   manifest = "${file("${path.module}/manifests/flux/helm-operator-deployment.yaml")}"
 }
 
+module "flux-helm-crd" {
+  source   = "./kubernetes_manifest"
+  manifest = "${file("${path.module}/manifests/flux/flux-helm-release-crd.yaml")}"
+}
+
 /* Not using:
 * - Github secret (making our own)
-* - memcache (optional, need the space)
+* - memcache dep (optional, need the space)
+* - memcache svc (optional, need the space)
 * - service (not using fluxctl for now)
 */
 
