@@ -17,6 +17,7 @@ spec:
       - name: git-key
         secret:
           secretName: flux-git-deploy
+          defaultMode: 0400
       containers:
       - name: flux-helm-operator
         # There are no ":latest" images for helm-operator. Find the most recent
@@ -27,6 +28,7 @@ spec:
         volumeMounts:
         - name: git-key
           mountPath: /etc/fluxd/ssh
+          readOnly: true
         args:
         # replace (at least) the following URL
         - --git-url=git@github.com:mt-inside/petstack-frogstar-k8s
