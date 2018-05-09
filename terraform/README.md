@@ -23,6 +23,10 @@ $ dot -Tpdf deps.dot > deps.pdf
   is that one module can't depend on another, and there's no other way to
 ensure the ordering. Just hack it by writing an infra output onto a tag of
 a deploy thing?
+  * can side-step this problem by not needing TF to wait for the cluster to
+    be up, if the cluster bootstrapping is done by pusher-style systemd
+units on the controllers that check for the bootstrap resources and play
+them in
 * Use helm provider to install everything possible
 * Factor out k8s version, flux version, git repo to sync
 * State in a remote, persistent place.

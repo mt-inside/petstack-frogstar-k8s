@@ -1,0 +1,17 @@
+[Unit]
+Description=Etcd
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+Environment=NAME=etcd
+Environment=IMAGE=TODO:latest
+ExecStartPre=-/usr/bin/docker kill ${NAME}
+ExecStartPre=-/usr/bin/docker rm ${NAME}
+ExecStartPre=/usr/bin/docker pull ${IMAGE}
+ExecStart=/usr/bin/docker run --name ${NAME} ${IMAGE}
+ExecStop=/usr/bin/docker stop ${NAME}
+
+[Install]
+WantedBy=multi-user.target
